@@ -22,7 +22,7 @@ public class Book {
     
     public Book() {}
 
-    public Book(String isbn, String title, String category, List<String> authors, String summary, String language, String publisher, String date, int totalItems, int borrowedItems) {
+    public Book(String isbn, String title, String category, List<String> authors, String summary, String language, String publisher, String date) {
         this.isbn = isbn;
         this.title = title;
         this.category = category;

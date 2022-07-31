@@ -73,7 +73,7 @@ public class BookService {
 	@GET
 	@Path ("/{isbn}")
 	@Produces({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN})
-	public Response getBookInHtml(@PathParam("isbn") String isbn, @Context SecurityContext sc) throws NotFoundException, InternalServerErrorException {
+	public Response getBookInHtml(@PathParam("isbn") String isbn) throws NotFoundException, InternalServerErrorException {
 		logger.info("With isbn: " + isbn);
 		
 		Book book = DBHandler.getBook(isbn);
