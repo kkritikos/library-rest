@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class PropertyReader {
-	private static boolean sqlite;
     private static String dbName;
     private static String dbHost;
     private static String dbPort;
@@ -37,15 +36,8 @@ public class PropertyReader {
     	if (s == null || s.trim().equals("")) return defaultVal;
     	else return s;
     }
-    
-    private static boolean getDefaultValueIfNull(String s, boolean defaultVal) {
-    	if (s == null || s.trim().equals("")) return defaultVal;
-    	else if (s.equals("sqlite")) return true;
-    	else return false;
-    }
 
 	private static void getProperties(){
-		sqlite = getDefaultValueIfNull(System.getProperty("db.type"),false);
 		Properties props = loadPropertyFile();
 		if (props != null){
 			dbName = getDefaultValueIfNull(props.getProperty("dbName"),"");
@@ -83,13 +75,5 @@ public class PropertyReader {
 	
 	public static String getPwd() {
 		return pwd;
-	}
-
-	public static boolean isSqlite() {
-		return sqlite;
-	}
-
-	public static void setSqlite(boolean sqlite) {
-		PropertyReader.sqlite = sqlite;
 	}
 }
