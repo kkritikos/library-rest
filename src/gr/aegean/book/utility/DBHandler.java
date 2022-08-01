@@ -19,11 +19,11 @@ public class DBHandler {
 			
 			Class.forName("com.mysql.cj.jdbc.Driver");  
 			Connection con = DriverManager.getConnection(  
-			"jdbc:mysql://" + PropertyReader.getDbHost() + ":" + PropertyReader.getDbPort() + "/books",PropertyReader.getLogin(),PropertyReader.getPwd());
+			"jdbc:mysql://" + PropertyReader.getDbHost() + ":" + PropertyReader.getDbPort() + "/books",
+				PropertyReader.getLogin(),PropertyReader.getPwd());
 			return con;
 		}
 		catch(Exception e) {
-			e.printStackTrace();
 			throw new InternalServerErrorException("Cannot connect to underlying database");
 		}
 	}
@@ -75,6 +75,28 @@ public class DBHandler {
 		return books;
 	}
 	
+	public static Book getBook(String isbn) throws InternalServerErrorException{
+		Book book = null;
+		Connection con = getConnection();
+		try {
+			Statement stmt = con.createStatement();
+			String query = "select * from book where isbn='" + isbn + "'";
+			System.out.println("query is: " + query);
+			ResultSet rs = stmt.executeQuery(query);
+			System.out.println("query was successful!!!");
+			if (rs.next()) {
+				book = getBookFromRS(rs);
+			}
+			System.out.println("processed query results!!!");
+			
+			con.close();
+		}
+		catch(Exception e) {
+			throw new InternalServerErrorException("An internal error prevented from getting the information of the library's books");
+		}
+		return book;
+	}
+	
 	public static List<Book> getBooks(String title, List<String> authors, String publisher) throws InternalServerErrorException{
 		List<Book> books = null;
 		boolean hasTitle = false, hasAuthors = false, hasPublisher = false;
@@ -117,35 +139,12 @@ public class DBHandler {
 		return books;
 	}
 	
-	public static Book getBook(String isbn) throws InternalServerErrorException{
-		Book book = null;
-		Connection con = getConnection();
-		try {
-			Statement stmt = con.createStatement();
-			String query = "select * from book where isbn='" + isbn + "'";
-			System.out.println("query is: " + query);
-			ResultSet rs = stmt.executeQuery(query);
-			System.out.println("query was successful!!!");
-			if (rs.next()) {
-				book = getBookFromRS(rs);
-			}
-			System.out.println("processed query results!!!");
-			
-			con.close();
-		}
-		catch(Exception e) {
-			throw new InternalServerErrorException("An internal error prevented from getting the information of the library's books");
-		}
-		return book;
-	}
-	
 	public static boolean existsBook(String isbn) throws InternalServerErrorException {
 		boolean hasBook = false;
 		Connection con = getConnection();
 		try {
 			Statement stmt = con.createStatement();
 			String query = "select * from book where isbn='" + isbn + "'";
-			System.out.println("query is: " + query);
 			ResultSet rs = stmt.executeQuery(query);
 			if (rs.next()) {
 				hasBook = true;
@@ -159,8 +158,9 @@ public class DBHandler {
 		return hasBook;
 	}
 	
-	public static void updateBook(Book book) throws InternalServerErrorException{
+	public static boolean updateBook(Book book) throws InternalServerErrorException{
 		Connection con = getConnection();
+		boolean updated = false;
 		try {
 			Statement stmt = con.createStatement();
 			String query = "update book set " +
@@ -172,14 +172,19 @@ public class DBHandler {
 			"category=" + getFieldValue(book.getCategory()) + ", " + 
 			"language=" + getFieldValue(book.getLanguage()) + " " +
 			"where isbn='" + book.getIsbn() + "'";
-			System.out.println("query is: " + query);
 			stmt.execute(query);
+			
+			if (stmt.getUpdateCount() == 1) {
+				updated = true;
+			}
 			
 			con.close();
 		}
 		catch(Exception e) {
 			throw new InternalServerErrorException("An internal error prevented from getting the information of the library's books");
 		}
+		
+		return updated;
 	}
 	
 	private static String getFieldValue(String value) {
@@ -187,8 +192,9 @@ public class DBHandler {
 		else return "'" + value + "'";
 	}
 	
-	public static void createBook(Book book) throws InternalServerErrorException{
+	public static boolean createBook(Book book) throws InternalServerErrorException{
 		Connection con = getConnection();
+		boolean created = false;
 		try {
 			Statement stmt = con.createStatement();
 			String query = "insert into book(isbn,authors,title,publisher,date,category,summary,language) "
@@ -197,14 +203,17 @@ public class DBHandler {
 					book.getPublisher() + "'," + getFieldValue(book.getDate()) + "," +
 					getFieldValue(book.getCategory()) + "," + getFieldValue(book.getSummary()) + "," +
 					getFieldValue(book.getLanguage()) + ")";
-			System.out.println("query is: " + query);
 			stmt.execute(query);
-			
+			if (stmt.getUpdateCount() == 1) {
+				created = true;
+			}
 			con.close();
 		}
 		catch(Exception e) {
 			throw new InternalServerErrorException("An internal error prevented from getting the information of the library's books");
 		}
+		
+		return created;
 	}
 	
 	public static boolean deleteBook(String isbn) throws InternalServerErrorException{
@@ -213,12 +222,10 @@ public class DBHandler {
 		try {
 			Statement stmt = con.createStatement();
 			String query = "delete from book where isbn='" + isbn + "'";
-			System.out.println("query is: " + query);
 			stmt.execute(query);
 			if (stmt.getUpdateCount() == 1) {
 				deleted = true;
 			}
-			
 			con.close();
 		}
 		catch(Exception e) {

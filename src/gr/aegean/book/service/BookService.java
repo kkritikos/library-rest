@@ -25,7 +25,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 @Path("/books")
@@ -158,9 +157,8 @@ public class BookService {
 		if (title == null || title.trim().equals(""))
 			throw new BadRequestException("MUST provide the title of the book");
 			
-		boolean exists = DBHandler.existsBook(isbn);
-		if (exists) DBHandler.updateBook(book);
-		else throw new NotFoundException();
+		boolean updated = DBHandler.updateBook(book);
+		if (!updated) throw new NotFoundException();
 			
 		return Response.noContent().build();
 	}
